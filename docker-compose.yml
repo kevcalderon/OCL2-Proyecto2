@@ -1,0 +1,19 @@
+version: "3"
+services:
+  backend: 
+    container_name: backend
+    restart: always
+    image: kevcalderon/backend
+    ports:
+      - "5000:5000"
+  frontend:
+    container_name: frontend
+    restart: always
+    image: kevcalderon/frontend
+    ports:
+      - "4000:80"
+    depends_on:
+      - backend
+    links:
+      - backend
+    
