@@ -23,4 +23,5 @@ def readFile():
     return jsonify(response)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    from waitress import serve
+    serve(app, port=5000)
