@@ -8,18 +8,27 @@ import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
+import Table from "react-bootstrap/Table";
 import "./App.css";
 
 function App() {
   const [input, setInput] = useState(null);
   const [algorit, setAlgorit] = useState("");
+  const [inputParam1, setInputParams1] = useState("");
+  const [inputParam2, setInputParams2] = useState("");
+  const [inputPredi, setInputPredi] = useState("");
+  const [fine, setIsFine] = useState(false);
+  const [data1, setData1] = useState();
 
-  function analizar(e) {
+  async function analizar(e) {
     e.preventDefault();
 
     let p = {
       inputFile: input,
       algoritmo: algorit,
+      param1: inputParam1,
+      param2: inputParam2,
+      predi: inputPredi,
     };
 
     let requestPost = {
@@ -30,10 +39,24 @@ function App() {
 
     const url = "http://127.0.0.1:5000/read";
 
-    fetch(url, requestPost)
+    await fetch(url, requestPost)
       .then((response) => response.json())
-      .then((data) => console.log(data))
-      .catch((err) => console.log(err));
+      .then((data) => {
+        setData1(data);
+        console.log(data1);
+        setIsFine(true);
+      })
+      .catch((err) => setIsFine(false));
+  }
+
+  function handleFileChange(e) {
+    e.preventDefault();
+    let readFile = e.target.files[0];
+    let reader = new FileReader();
+    reader.onload = function (ev) {
+      setInput(ev.target.result);
+    };
+    reader.readAsText(readFile);
   }
 
   return (
@@ -64,24 +87,38 @@ function App() {
                       <option value="1">Regresión lineal</option>
                       <option value="2">Regresión polinomial</option>
                       <option value="3">Clasificador Gaussiano</option>
-                      <option value="4">Redes neuronales</option>
+                      <option value="4">
+                        Clasificador de árboles de decisión
+                      </option>
+                      <option value="5">Redes neuronales</option>
                     </Form.Select>
                   </Form.Group>
                   <Form.Group className="mb-3">
                     <Form.Label>Parametros a evaluar</Form.Label>
-                    <Form.Control type="text" placeholder="Parametro 1" />
+                    <Form.Control
+                      type="text"
+                      placeholder="Parametro 1"
+                      onChange={(e) => setInputParams1(e.target.value)}
+                    />
                     <br></br>
-                    <Form.Control type="text" placeholder="Parametro 2" />
+                    <Form.Control
+                      type="text"
+                      placeholder="Parametro 2"
+                      onChange={(e) => setInputParams2(e.target.value)}
+                    />
                     <br></br>
-                    <Form.Control type="text" placeholder="Parametro 3" />
-                    <br></br>
-                    <Form.Control type="text" placeholder="Parametro 4" />
+                    <Form.Label>Parametro de predicción</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Escribe el dato a predecir"
+                      onChange={(e) => setInputPredi(e.target.value)}
+                    />
                   </Form.Group>
                   <Form.Group controlId="formFile" className="mb-3">
                     <Form.Label>Archivo a analizar</Form.Label>
                     <Form.Control
                       type="file"
-                      onChange={(e) => setInput(e.target.files[0])}
+                      onChange={(e) => handleFileChange(e)}
                     />
                   </Form.Group>
                   <Button variant="primary" type="button" onClick={analizar}>
@@ -91,7 +128,48 @@ function App() {
               </Card.Body>
             </Card>
           </Col>
-          <Col>2 of 2</Col>
+          <Col>
+            <h1>TABLA DE RESULTADOS</h1>
+            {fine === true ? (
+              <div>
+                <Table striped bordered hover>
+                  <thead>
+                    <tr>
+                      <th>Propiedad</th>
+                      <th>Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.keys(data1).map((key) => {
+                      return (
+                        <tr key={key}>
+                          <td>{key}</td>
+                          <td>{data1[key]}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </Table>
+                <div align="center">
+                  <img
+                    src="https://blush.design/api/download?shareUri=pHGseR9VtN4y0o1F&c=Skin_0%7Eb75858-0.5%7Eb75858&w=800&h=800&fm=png"
+                    width="50%"
+                    height="50%"
+                    alt="success"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div align="center">
+                <img
+                  src="https://img.freepik.com/vector-gratis/trabajador-dudas_1012-193.jpg"
+                  width="50%"
+                  height="50%"
+                  alt="start_image"
+                />
+              </div>
+            )}
+          </Col>
         </Row>
       </Container>
     </div>
