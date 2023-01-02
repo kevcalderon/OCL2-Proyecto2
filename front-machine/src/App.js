@@ -45,8 +45,10 @@ function App() {
       .then((data) => {
         setData1(data);
         console.log(data);
-        if (data.graph == "true") {
+        if (data.graph === "true") {
           graph();
+        } else {
+          setImgDraw("");
         }
 
         setIsFine(true);

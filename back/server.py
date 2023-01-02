@@ -40,26 +40,22 @@ def readFile():
         response = {'RMSE': regresion[0], "R2": regresion[1], "Predicción": regresion[2], "graph": "true"}
         return jsonify(response)
     elif typeAlgorithm == "3":
-        clasificadorGaussiano(param1,param2,predi,data)
-        response = {'message': 'success'}
+        classificador = clasificadorGaussiano()
+        response = {'Acurracy': classificador[0], 'graph': 'true'}
         return jsonify(response)
     elif typeAlgorithm == "4":
-        arbol = arbolDecision(param1,param2,predi,data)
-        # print("RESPUESTA1",arbol[0])
-        # print("RESPUESTA2",arbol[1])
-        
+        arbol = arbolDecision(param1,param2,predi,data)    
         response = {"Prediccion": float(arbol[0]), "Acurracy": float(arbol[1]), "graph": "true"}
         return jsonify(response)
-        # response = {'message': 'success'}
-        # return jsonify(response)
     elif typeAlgorithm == "5":
-        redesNeuronales(param1,param2,predi,data)
-        response = {'message': 'success'}
+        redes = redesNeuronales(param1,param2,predi,data)
+        response = {'Prediccion': redes[0], 'Acurracy': redes[1], "graph": "false"}
         return jsonify(response)
 
-
+    # response = {'message': 'success'}
+    # return jsonify(response)
 
 if __name__ == '__main__':
-    # from waitress import serve
-    # serve(app, port=5000)
-    app.run(debug=True)
+    from waitress import serve
+    serve(app, port=5000)
+    # app.run(debug=True)

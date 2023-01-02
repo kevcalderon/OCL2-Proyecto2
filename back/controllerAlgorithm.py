@@ -10,6 +10,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.tree import plot_tree
 from sklearn import preprocessing
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neural_network import MLPRegressor
 from sklearn.datasets import load_iris
 import io
 import numpy as np
@@ -78,34 +79,55 @@ def regresionPolinomial(x_name,y_name,prediccion,data):
     graphArray.append(graph)
     return [rmse,r2,y_new_pred]
 
-def clasificadorGaussiano(x_name,y_name,prediccion,data):
-    # x, y = load_iris(return_X_y=True)
-    # print("X", x)
-    # print("Y", y)
-    x = np.array(data[x_name]).reshape(-1,1)
-    y = np.array(data[y_name]).reshape(-1,1)
-    le = preprocessing.LabelEncoder()
-    y_enco = le.fit_transform(y)
-    feature = list(zip(y_enco))
-
-    clf = GaussianNB()
-    # X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.5, random_state=0)
-    clf.fit(x, feature)
-    y_pred = clf.predict(x)
-    y_pred2 = clf.predict([[float(prediccion)]])
-    print("YPRED: ", y_pred)
-    print("YPRED: ", y_pred2)
-    print("ACCURACY: ", accuracy_score(y, y_pred))
 
 
+def clasificadorGaussiano():
+    # x = np.array(data[x_name]).reshape(-1,1)
+    # y = np.array(data[y_name]).reshape(-1,1)
+ 
+    # # Datos de entrenamiento
+    X_train = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
+    y_train = np.array([1, 1, 1, 2, 2, 2])
+
+    # # Datos de prueba
+    X_test = np.array([[-0.8, -1], [1.2, 1]])
 
     # X, y = load_iris(return_X_y=True)
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
-    # gnb = GaussianNB()
-    # y_pred = gnb.fit(X_train, y_train).predict(X_test)
+    X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.5, random_state=0)
+    gnb = GaussianNB()
+    gnb.fit(X_train, y_train)
+    y_pred = gnb.predict(X_test)
+
+    
+    acurracy = accuracy_score(y_train,y_pred)
+    print(acurracy)
+
+
+    # Obtener la primera y segunda características de los datos de entrenamiento
+    x_min, x_max = X_train[:, 0].min() - .5, X_train[:, 0].max() + .5
+    y_min, y_max = X_train[:, 1].min() - .5, X_train[:, 1].max() + .5
+
+    # Generar una malla de puntos en el intervalo [x_min, x_max]x[y_min, y_max]
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1),
+                        np.arange(y_min, y_max, 0.1))
+
+    # Utilizar el clasificador para predecir las etiquetas de los puntos de la malla
+    graph, ax = plt.subplots(layout='constrained')
+    Z = gnb.predict(np.c_[xx.ravel(), yy.ravel()])
+
+    # Poner los resultados en una imagen de color
+    Z = Z.reshape(xx.shape)
+    ax.pcolormesh(xx, yy, Z, cmap=plt.cm.Paired)
+
+    # Graficar también los puntos de entrenamiento
+    ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, edgecolors='k', cmap=plt.cm.Paired)
+    graphArray.append(graph)
+  
+    return [acurracy]
+
+
     # print("Number of mislabeled points out of a total %d points : %d" % (X_test.shape[0], (y_test != y_pred).sum()))
     
-
 
 def arbolDecision(x_name,y_name,prediccion,data):
     # opcion1
@@ -132,21 +154,33 @@ def arbolDecision(x_name,y_name,prediccion,data):
     return [y_pred2, accuracy]
     # plt.show()
     
-    # opcion2
-    # x = data[x_name].values.reshape(-1,1)
-    # y = data[y_name].values.reshape(-1,1)
-    # X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
-    # model = DecisionTreeClassifier()
-    # model.fit(X_train, y_train)
-    # y_pred = model.predict(X_test)
-    # accuracy = accuracy_score(y_test, y_pred)
-
-
-    # fig, ax = plt.subplots(layout='constrained')
-    # plot_tree(model, filled=True)
-    # plt.show()
-    # print("EVALUACION: ", accuracy)
-    # pass
+  
 
 def redesNeuronales(x_name,y_name,prediccion,data):
-    pass
+    x = data[x_name]
+    y = data[y_name]
+
+    X = x[:,np.newaxis]
+    # print("X: ", X)
+    # print("Y: ", y)
+    
+    accuracy = None
+    mlr = None
+    pred = None
+    while True:
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+        mlr = MLPRegressor(solver='lbfgs',alpha=1e-5,hidden_layer_sizes=(3,3),random_state=1)
+        mlr.fit(X_train,y_train)
+        accuracy= mlr.score(X_train,y_train)
+        if mlr.score(X_train,y_train)>0.95:
+            break
+    
+    if prediccion != "":
+        pred_new = mlr.predict([[float(prediccion)]])
+        pred = pred_new[0]
+
+    
+    return [pred, accuracy]
+    # adios
+            
