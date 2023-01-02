@@ -3,20 +3,19 @@ from flask_cors import CORS
 from controllerAlgorithm import *
 import pandas as pd
 from io import StringIO
+from globalArray import graphArray
 
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-@app.route('/getFile', methods=['GET'])
-def getFile():
-    response = {'message': 'success'}
-    return jsonify(response)
+@app.route('/graph', methods=['GET'])
+def getGraph():
+    drawResponse = graphArray[-1]
+    output = io.BytesIO()
+    FigureCanvas(drawResponse).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
 
-@app.route('/api/v1/users/<id>', methods=['GET'])
-def get_user(id):
-    response = {'message': 'success'}
-    return jsonify(response)
 
 @app.route('/read', methods=['POST'])
 def readFile():
@@ -34,20 +33,31 @@ def readFile():
     # print(data)
     if typeAlgorithm == "1":
         regresion = regresionLineal(param1, param2, predi,data)     
-        response = {'RMSE': regresion[0], "R2": regresion[1], "Predi": regresion[2]}
+        response = {'RMSE': regresion[0], "R2": regresion[1], "Predicción": regresion[2], "graph": "true"}
+        return jsonify(response)
+    elif typeAlgorithm == "2":
+        regresion = regresionPolinomial(param1, param2, predi,data)
+        response = {'RMSE': regresion[0], "R2": regresion[1], "Predicción": regresion[2], "graph": "true"}
+        return jsonify(response)
+    elif typeAlgorithm == "3":
+        clasificadorGaussiano(param1,param2,predi,data)
+        response = {'message': 'success'}
+        return jsonify(response)
+    elif typeAlgorithm == "4":
+        arbol = arbolDecision(param1,param2,predi,data)
+        # print("RESPUESTA1",arbol[0])
+        # print("RESPUESTA2",arbol[1])
+        
+        response = {"Prediccion": float(arbol[0]), "Acurracy": float(arbol[1]), "graph": "true"}
+        return jsonify(response)
+        # response = {'message': 'success'}
+        # return jsonify(response)
+    elif typeAlgorithm == "5":
+        redesNeuronales(param1,param2,predi,data)
+        response = {'message': 'success'}
         return jsonify(response)
 
-    elif typeAlgorithm == "2":
-        regresionPolinomial(param1, param2, predi,data)
-    elif typeAlgorithm == "3":
-        clasificadorGaussiano()
-    # response = {'message': 'success'}
-    # return jsonify(response)
 
-@app.route('/graph', methods=['GET'])
-def getGraph():
-    response = {'message': 'sucess'}
-    return jsonify(response)
 
 if __name__ == '__main__':
     # from waitress import serve

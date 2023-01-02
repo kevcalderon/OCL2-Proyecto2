@@ -19,8 +19,11 @@ function App() {
   const [inputPredi, setInputPredi] = useState("");
   const [fine, setIsFine] = useState(false);
   const [data1, setData1] = useState();
+  const [imgDraw, setImgDraw] = useState("");
+  const url = "http://127.0.0.1:5000/read";
+  const url2 = "http://127.0.0.1:5000/graph";
 
-  async function analizar(e) {
+  const analizar = async (e) => {
     e.preventDefault();
 
     let p = {
@@ -37,16 +40,29 @@ function App() {
       body: JSON.stringify(p),
     };
 
-    const url = "http://127.0.0.1:5000/read";
-
     await fetch(url, requestPost)
       .then((response) => response.json())
       .then((data) => {
         setData1(data);
-        console.log(data1);
+        console.log(data);
+        if (data.graph == "true") {
+          graph();
+        }
+
         setIsFine(true);
       })
       .catch((err) => setIsFine(false));
+  };
+
+  async function graph() {
+    try {
+      const response = await fetch(url2).catch();
+      const respoData = await response.blob();
+      const imageObjectUrl = URL.createObjectURL(respoData);
+      setImgDraw(imageObjectUrl);
+    } catch (e) {
+      alert("Error al generar imagen.");
+    }
   }
 
   function handleFileChange(e) {
@@ -83,7 +99,7 @@ function App() {
                       aria-label="Default select example"
                       onChange={(e) => setAlgorit(e.target.value)}
                     >
-                      <option>Open this select menu</option>
+                      <option>Selecciona una opción</option>
                       <option value="1">Regresión lineal</option>
                       <option value="2">Regresión polinomial</option>
                       <option value="3">Clasificador Gaussiano</option>
@@ -150,14 +166,15 @@ function App() {
                     })}
                   </tbody>
                 </Table>
-                <div align="center">
-                  <img
-                    src="https://blush.design/api/download?shareUri=pHGseR9VtN4y0o1F&c=Skin_0%7Eb75858-0.5%7Eb75858&w=800&h=800&fm=png"
-                    width="50%"
-                    height="50%"
-                    alt="success"
-                  />
-                </div>
+                {imgDraw === "" ? (
+                  <div align="center">
+                    <h5>Algoritmo no aplica generación de gráfica.</h5>
+                  </div>
+                ) : (
+                  <div align="center">
+                    <img src={imgDraw} width="80%" height="80%" alt="success" />
+                  </div>
+                )}
               </div>
             ) : (
               <div align="center">
